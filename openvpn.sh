@@ -23,22 +23,49 @@ case $1 in
     shift # past argument
     ;;
     *)
-    echo "argument error, usage: './openvpn -c' or './openvpn -s' or './openvpn --client' or './openvpn --server' "        # unknown option
+    echo "argument error, usage: './openvpn -c' or './openvpn -s' or './openvpn --client' or './openvpn --server' "   # unknown option
     exit 1
     ;;
 esac
 
 if [ "$configure" = client ];
 then
-    echo "client"
-    echo "dev tun \nproto tcp-client \nremote $serverDomain \nifconfig $clientVPNIP $serverVPNIP \nkeepalive 60 600 \nsecret /etc/openvpn/static.key" | sudo tee /etc/openvpn/$clientConfigFileName > /dev/null
+    echo "
+dev tun 
+proto tcp-client 
+remote $serverDomain 
+ifconfig $clientVPNIP $serverVPNIP 
+keepalive 60 600 
+secret /etc/openvpn/static.key
+    " | sudo tee /etc/openvpn/$clientConfigFileName > /dev/null
     echo AUTOSTART=\"all\" | sudo tee -a /etc/default/openvpn >> /dev/null
 else
-    echo "server"
     sudo openvpn --genkey --secret /etc/openvpn/static.key
-    echo "dev tun \nproto tcp-server \nlocal 0.0.0.0 \nifconfig $serverVPNIP $clientVPNIP \nkeepalive 60 600 \nsecret /etc/openvpn/static.key" | sudo tee /etc/openvpn/$serverConfigFileName > /dev/null
+    echo "
+dev tun 
+proto tcp-server 
+local 0.0.0.0 
+ifconfig $serverVPNIP $clientVPNIP 
+keepalive 60 600 
+secret /etc/openvpn/static.key
+    " | sudo tee /etc/openvpn/$serverConfigFileName > /dev/null
     echo AUTOSTART=\"all\" | sudo tee -a /etc/default/openvpn >> /dev/null
 fi
 
 sudo /etc/init.d/openvpn restart
-echo "\nNote: \n\ncopy static key from you server (/etc/openvpn/static.key) to  /etc/openvpn/ \n\nIn /etc/ssh/sshd_config change \"PubkeyAuthentication no\" (line number 32) and uncomment \"PasswordAuthentication yes\" (line number 52) \n\nYou might have to install ssh using \"sudo apt-get install ssh\" if you can find the ssh folder"
+
+echo "
+
+Note: 
+
+In /etc/ssh/sshd_config change \"PubkeyAuthentication no\" (line 32) and uncomment \"PasswordAuthentication yes\" (line 52) 
+
+You might have to install ssh using \"sudo apt-get install ssh\" if you cannot find the ssh folder
+
+"
+
+if [ "$configure" = client ];
+then
+    echo "copy static key from you server (/etc/openvpn/static.key) to  /etc/openvpn/ \n\n"
+fi
+
