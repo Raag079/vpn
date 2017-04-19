@@ -25,7 +25,8 @@ $ ./openvpn.sh -s
 
 ```shell
 $ ./openvpn.sh -c
-## After execution a note is displayed on copying the static key for VPN authentication and SSH password authentication"
+## After execution a note is displayed on copying the static key for VPN authentication 
+   and SSH password authentication"
 ```
 
 
